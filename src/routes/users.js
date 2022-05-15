@@ -3,7 +3,9 @@ import { body } from "express-validator";
 import userModel from "../models/user.js";
 import { Password } from "../lib/password.js";
 import jwt from "jsonwebtoken";
-import { validateRequest } from "../midleware/validateRequest.js";
+import validateRequest from "../midleware/validateRequest.js";
+import currentUser from "../midleware/currentUser.js";
+import requiredAuth from "../midleware/requiredAuth.js";
 const router = express.Router();
 
 router.post(
@@ -32,6 +34,7 @@ router.post(
       const newUser = new userModel({
         username,
         password,
+        created_at: Date.now(),
       });
       await newUser.save();
 
@@ -127,6 +130,36 @@ router.post(
       );
       if (!passwordsMatch) {
         return res.status(401).send("Wrong password");
+      }
+
+      const userJwt = jwt.sign(
+        {
+          id: existingUser.id,
+          username: existingUser.username,
+        },
+        process.env.SECRET
+      );
+
+      req.session = { jwt: userJwt };
+      res.status(200).send(existingUser);
+    } catch (error) {
+      console.log(error);
+      res.status(500).send(`An error as occured: ${error}`);
+    }
+  }
+);
+
+router.get(
+  "/currentUser",
+  currentUser,
+  requiredAuth,
+  validateRequest,
+  async (req, res) => {
+    try {
+      const { currentUser } = req;
+      const existingUser = await userModel.findOne({ _id: currentUser.id });
+      if (!existingUser) {
+        return res.status(401).send("User not found");
       }
 
       const userJwt = jwt.sign(

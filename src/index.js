@@ -3,7 +3,7 @@ import { app } from "./app.js";
 
 const start = async () => {
   try {
-    console.log(process.env.MONGO_URI);
+    // console.log(process.env.MONGO_URI);
     await mongoose.connect(process.env.MONGO_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,

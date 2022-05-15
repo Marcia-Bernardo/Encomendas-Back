@@ -14,14 +14,15 @@ const orderSchema = new Schema(
     ],
     obs: { type: String, required: true },
     name: { type: String, required: true },
-    data: { type: Number, required: true },
-    hour: { type: Number, required: true },
+    date: { type: Number, required: true },
     created_at: { type: Date, default: Date.now() },
     updated_at: { type: Date, default: Date.now() },
   },
   {
     toJSON: {
       transform(doc, ret) {
+        ret.id = ret._id;
+        delete ret._id;
         delete ret.__v;
       },
     },

@@ -5,11 +5,7 @@ const Schema = mongoose.Schema;
 const itemSchema = new Schema(
   {
     _id: { type: String, default: v1 },
-    qtd: {
-      type: Number,
-      required: true,
-    },
-    type: { type: String, required: true },
+    name: { type: String, required: true },
     confetionTime: {
       type: Number,
       required: true,
@@ -20,6 +16,8 @@ const itemSchema = new Schema(
   {
     toJSON: {
       transform(doc, ret) {
+        ret.id = ret._id;
+        delete ret._id;
         delete ret.__v;
       },
     },

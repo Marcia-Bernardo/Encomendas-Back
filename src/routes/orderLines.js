@@ -1,11 +1,10 @@
 import express from "express";
-import itemModel from "../models/item.js";
+import orderLineModel from "../models/orderLine.js";
 import userModel from "../models/user.js";
 import currentUser from "../midleware/currentUser.js";
 import requiredAuth from "../midleware/requiredAuth.js";
 import validateRequest from "../midleware/validateRequest.js";
 import { body } from "express-validator";
-
 const router = express.Router();
 
 router.put(
@@ -15,29 +14,31 @@ router.put(
       .trim()
       .isLength({ min: 1 })
       .notEmpty()
-      .withMessage("Introduza um id"),
+      .withMessage("Provide a id"),
   ],
   validateRequest,
   currentUser,
   requiredAuth,
   async (req, res) => {
     try {
-      const { name, id, confetionTime } = req.body;
-      const { currentUser } = req;
-      const user = await userModel.findById(currentUser.id);
+      const { qtd, type, confectionTime, id } = req.body;
+
+      const user = await userModel.findById(req.currentUser.id);
       if (!user) {
-        return res.status(400).send("Utilizador não encontrado");
+        return res.status(400).send("User not found");
       }
-      if (user.permission !== "admin") {
-        return res.status(400).send("Não tem permissão para fazer isto");
+      if (user.permission !== "admin" || user.permission !== "edit") {
+        return res.status(400).send("You are not authorized to do this");
       }
-      const item = await itemModel.findById(id);
+      const item = await orderLineModel.findById(id);
       if (!item) {
-        return res.status(400).send("Tipo de produto não encontrado");
+        return res.status(400).send("Product not found");
       }
       item.set({
-        name: name || item.name,
-        confetionTime: confetionTime || item.confectionTime,
+        qtd: qtd || item.qtd,
+        confectionTime: confectionTime || item.confectionTime,
+        type: type || item.type,
+
         updated_at: Date.now(),
       });
       await item.save();
@@ -45,20 +46,16 @@ router.put(
       res.status(200).send(item);
     } catch (error) {
       console.log(error);
-      res.status(500).send(`Algo de errado aconteceu: ${error}`);
+      res.status(500).send(`Something wrong happened: ${error}`);
     }
   }
 );
 
 router.post(
-  "/item",
+  "/orderLine",
   [
-    body("name")
-      .trim()
-      .isLength({ min: 1 })
-      .notEmpty()
-      .withMessage("Provide a name"),
-
+    body("qtd").notEmpty().withMessage("Provide a quantity"),
+    body("type").notEmpty().withMessage("Provide a type"),
     body("confetionTime").notEmpty().withMessage("Provide a confection time"),
   ],
   validateRequest,
@@ -66,28 +63,27 @@ router.post(
   requiredAuth,
   async (req, res) => {
     try {
-      const { type, name, confetionTime } = req.body;
-      const { currentUser } = req;
-      const user = await userModel.findById(currentUser.id);
+      const { qtd, itemId } = req.body;
+
+      const user = await userModel.findById(req.currentUser.id);
       if (!user) {
-        return res.status(400).send("Utilizador não encontrado");
+        return res.status(400).send("User not found");
       }
-      if (user.permission !== "admin") {
-        return res.status(400).send("Não tem permissão para fazer isto");
+      if (user.permission === "view") {
+        return res.status(400).send("You are not authorized to do this");
       }
 
-      const itemType = new itemModel({
-        type: type,
-        name: name,
-        confetionTime: confetionTime,
+      const orderLine = new orderLineModel({
+        qtd: qtd,
+        item: itemId,
         created_at: Date.now(),
       });
-      await itemType.save();
+      await orderLine.save();
 
-      res.status(200).send(itemType);
+      res.status(200).send(orderLine);
     } catch (error) {
       console.log(error);
-      res.status(500).send(`Algo mau aconteceu: ${error}`);
+      res.status(500).send(`Something wrong happened: ${error}`);
     }
   }
 );
@@ -133,5 +129,5 @@ router.post(
 //   }
 // );
 
-export { router as itemRouter };
+export { router as orderLineRouter };
 

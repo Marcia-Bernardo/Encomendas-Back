@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
-export const currentUser = (req, res, next) => {
+
+const currentUser = (req, res, next) => {
   if (!req.session?.jwt) {
     return next();
   }
@@ -11,3 +12,6 @@ export const currentUser = (req, res, next) => {
   }
   next();
 };
+
+export default currentUser;
+
