@@ -1,8 +1,8 @@
 import express from "express";
+import jwt from "jsonwebtoken";
 import { body } from "express-validator";
 import userModel from "../models/user.js";
 import { Password } from "../lib/password.js";
-import jwt from "jsonwebtoken";
 import validateRequest from "../midleware/validateRequest.js";
 import currentUser from "../midleware/currentUser.js";
 import requiredAuth from "../midleware/requiredAuth.js";
@@ -15,12 +15,12 @@ router.post(
       .trim()
       .isLength({ min: 4, max: 20 })
       .notEmpty()
-      .withMessage("Provide a username"),
+      .withMessage("Introduza um username"),
     body("password")
       .trim()
       .isLength({ min: 4, max: 20 })
       .notEmpty()
-      .withMessage("Provide a password"),
+      .withMessage("Introduza uma password"),
   ],
   validateRequest,
   async (req, res) => {
@@ -29,7 +29,7 @@ router.post(
       const existUser = await userModel.findOne({ username });
 
       if (existUser) {
-        return res.status(400).send("User already exist");
+        return res.status(400).send("Utilizador já existe");
       }
       const newUser = new userModel({
         username,
@@ -38,10 +38,10 @@ router.post(
       });
       await newUser.save();
 
-      res.status(200).send("User created");
+      res.status(200).send("Utilizador criado com sucesso");
     } catch (error) {
       console.log(error);
-      res.status(500).send(`Something wrong happened: ${error}`);
+      res.status(500).send(`Algo de errado aconteceu: ${error}`);
     }
   }
 );
@@ -53,12 +53,12 @@ router.put(
       .trim()
       .isLength({ min: 4, max: 20 })
       .notEmpty()
-      .withMessage("Provide a username"),
+      .withMessage("Introduza um username"),
     body("password")
       .trim()
       .isLength({ min: 4, max: 20 })
       .notEmpty()
-      .withMessage("Provide a password"),
+      .withMessage("Introduza uma password"),
   ],
   validateRequest,
   async (req, res) => {
@@ -67,10 +67,10 @@ router.put(
       const user = await userModel.findOne({ username });
 
       if (!user) {
-        return res.status(400).send("User not found");
+        return res.status(400).send("Utilizador não encontrado");
       }
       if (user.permission !== "admin") {
-        return res.status(400).send("You are not authorized to do this");
+        return res.status(400).send("Não tem permissão para fazer isto");
       }
       user.set({ permission, updated_at: Date.now() });
       await user.save();
@@ -78,7 +78,7 @@ router.put(
       res.status(200).send(user);
     } catch (error) {
       console.log(error);
-      res.status(500).send(`Something wrong happened: ${error}`);
+      res.status(500).send(`Algo errado aconteceu: ${error}`);
     }
   }
 );
@@ -89,16 +89,16 @@ router.delete("/user", async (req, res) => {
     const user = await userModel.findOne({ username });
 
     if (!user) {
-      return res.status(400).send("User not found");
+      return res.status(400).send("Utiliazdor não encontrado");
     }
     if (user.permission !== "admin") {
-      return res.status(400).send("You are not authorized to do this");
+      return res.status(400).send("Não tem permissão para fazer isto");
     }
     await user.delete();
     res.status(200).send(user);
   } catch (error) {
     console.log(error);
-    res.status(500).send(`Something wrong happened: ${error}`);
+    res.status(500).send(`Algo errado aconteceu: ${error}`);
   }
 });
 
@@ -109,12 +109,12 @@ router.post(
       .trim()
       .isLength({ min: 4, max: 20 })
       .notEmpty()
-      .withMessage("Provide a username"),
+      .withMessage("Introduza um username"),
     body("password")
       .trim()
       .isLength({ min: 4, max: 20 })
       .notEmpty()
-      .withMessage("Provide a password"),
+      .withMessage("Introfuza uma password"),
   ],
   validateRequest,
   async (req, res) => {
@@ -122,14 +122,14 @@ router.post(
       const { username, password } = req.body;
       const existingUser = await userModel.findOne({ username });
       if (!existingUser) {
-        return res.status(401).send("User not found");
+        return res.status(401).send("Utilizador não encontrado");
       }
       const passwordsMatch = await Password.compare(
         existingUser.password,
         password
       );
       if (!passwordsMatch) {
-        return res.status(401).send("Wrong password");
+        return res.status(401).send("Password errada");
       }
 
       const userJwt = jwt.sign(
@@ -144,7 +144,7 @@ router.post(
       res.status(200).send(existingUser);
     } catch (error) {
       console.log(error);
-      res.status(500).send(`An error as occured: ${error}`);
+      res.status(500).send(`Algo errado aconteceu: ${error}`);
     }
   }
 );
@@ -159,7 +159,7 @@ router.get(
       const { currentUser } = req;
       const existingUser = await userModel.findOne({ _id: currentUser.id });
       if (!existingUser) {
-        return res.status(401).send("User not found");
+        return res.status(401).send("Utiliador não encontrado");
       }
 
       const userJwt = jwt.sign(
@@ -174,7 +174,7 @@ router.get(
       res.status(200).send(existingUser);
     } catch (error) {
       console.log(error);
-      res.status(500).send(`An error as occured: ${error}`);
+      res.status(500).send(`Algo errado aconteceu: ${error}`);
     }
   }
 );

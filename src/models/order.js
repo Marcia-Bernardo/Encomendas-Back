@@ -14,7 +14,7 @@ const orderSchema = new Schema(
     ],
     obs: { type: String, required: true },
     name: { type: String, required: true },
-    date: { type: Number, required: true },
+    date: { type: Date, required: true },
     created_at: { type: Date, default: Date.now() },
     updated_at: { type: Date, default: Date.now() },
   },

@@ -11,10 +11,10 @@ const start = async () => {
     });
 
     app.listen(process.env.PORT || 3000, () => {
-      console.log(`Server started on port ${process.env.PORT || 3000}`);
+      console.log(`Servidor a correr na porta ${process.env.PORT || 3000}`);
     });
   } catch (err) {
-    console.log(`error: ${err}`);
+    console.log(`Erro: ${err}`);
   }
 };
 

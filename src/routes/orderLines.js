@@ -8,45 +8,43 @@ import { body } from "express-validator";
 const router = express.Router();
 
 router.put(
-  "/item",
+  "/orderLine",
   [
     body("id")
       .trim()
       .isLength({ min: 1 })
       .notEmpty()
-      .withMessage("Provide a id"),
+      .withMessage("Introduza um id"),
   ],
   validateRequest,
   currentUser,
   requiredAuth,
   async (req, res) => {
     try {
-      const { qtd, type, confectionTime, id } = req.body;
+      const { qtd, id } = req.body;
 
       const user = await userModel.findById(req.currentUser.id);
       if (!user) {
-        return res.status(400).send("User not found");
+        return res.status(400).send("Utilizador não encontrado");
       }
-      if (user.permission !== "admin" || user.permission !== "edit") {
-        return res.status(400).send("You are not authorized to do this");
+      if (user.permission !== "admin") {
+        return res.status(400).send("Não tem permissão para fazer isto");
       }
-      const item = await orderLineModel.findById(id);
-      if (!item) {
-        return res.status(400).send("Product not found");
+      const orderLine = await orderLineModel.findById(id);
+      if (!orderLine) {
+        return res.status(400).send("Produto não encontrado");
       }
-      item.set({
-        qtd: qtd || item.qtd,
-        confectionTime: confectionTime || item.confectionTime,
-        type: type || item.type,
+      orderLine.set({
+        qtd: qtd || orderLine.qtd,
 
         updated_at: Date.now(),
       });
-      await item.save();
+      await orderLine.save();
 
-      res.status(200).send(item);
+      res.status(200).send(orderLine);
     } catch (error) {
       console.log(error);
-      res.status(500).send(`Something wrong happened: ${error}`);
+      res.status(500).send(`Algo errado aconteceu: ${error}`);
     }
   }
 );
@@ -54,9 +52,8 @@ router.put(
 router.post(
   "/orderLine",
   [
-    body("qtd").notEmpty().withMessage("Provide a quantity"),
-    body("type").notEmpty().withMessage("Provide a type"),
-    body("confetionTime").notEmpty().withMessage("Provide a confection time"),
+    body("qtd").notEmpty().withMessage("Introduza uma quantidade"),
+    body("itemId").notEmpty().withMessage("Introduza um item"),
   ],
   validateRequest,
   currentUser,
@@ -67,10 +64,10 @@ router.post(
 
       const user = await userModel.findById(req.currentUser.id);
       if (!user) {
-        return res.status(400).send("User not found");
+        return res.status(400).send("Utilizador não encontrado");
       }
       if (user.permission === "view") {
-        return res.status(400).send("You are not authorized to do this");
+        return res.status(400).send("Não tem permissão para fazer isto");
       }
 
       const orderLine = new orderLineModel({
@@ -83,7 +80,7 @@ router.post(
       res.status(200).send(orderLine);
     } catch (error) {
       console.log(error);
-      res.status(500).send(`Something wrong happened: ${error}`);
+      res.status(500).send(`Algo errado aconteceu: ${error}`);
     }
   }
 );

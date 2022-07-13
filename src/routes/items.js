@@ -8,6 +8,16 @@ import { body } from "express-validator";
 
 const router = express.Router();
 
+router.get("/item", async (req, res) => {
+  try {
+    const items = await itemModel.find();
+    res.status(200).send(items);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(`Algo errado aconteceu: ${error}`);
+  }
+});
+
 router.put(
   "/item",
   [
@@ -57,9 +67,11 @@ router.post(
       .trim()
       .isLength({ min: 1 })
       .notEmpty()
-      .withMessage("Provide a name"),
+      .withMessage("Introduza um nome"),
 
-    body("confetionTime").notEmpty().withMessage("Provide a confection time"),
+    body("confetionTime")
+      .notEmpty()
+      .withMessage("Introduza um tempo de confeção"),
   ],
   validateRequest,
   currentUser,
@@ -87,7 +99,7 @@ router.post(
       res.status(200).send(itemType);
     } catch (error) {
       console.log(error);
-      res.status(500).send(`Algo mau aconteceu: ${error}`);
+      res.status(500).send(`Algo errado aconteceu: ${error}`);
     }
   }
 );

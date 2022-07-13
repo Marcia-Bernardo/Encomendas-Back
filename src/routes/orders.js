@@ -1,45 +1,40 @@
 import express from "express";
-
-import jwt from "jsonwebtoken";
 import orderModel from "../models/order.js";
+import userModel from "../models/user.js";
 import currentUser from "../midleware/currentUser.js";
 import requiredAuth from "../midleware/requiredAuth.js";
 import validateRequest from "../midleware/validateRequest.js";
 import { body } from "express-validator";
+import itemModel from "../models/item.js";
 const router = express.Router();
 
-// router.get("/outlets", async (req, res) => {
-//   try {
-//     const payload = jwt.verify(req.session.jwt, process.env.SECRET);
-//     const user = await userModel.findById(payload.id);
-//     if (!user) {
-//       return res.status(400).send("User not found");
-//     }
-//     res.status(200).send(user);
-//   } catch (error) {
-//     console.log(error);
-//     res.status(500).send(`Something wrong happened: ${error}`);
-//   }
-// });
+router.get("/all", async (req, res) => {
+  try {
+    // const orders = await orderModel.find();
+    // const items = [];
+    // console.log(orders.items);
+    const orders = await orderModel.find();
 
-// router.get("/outlets/:id/products", async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const products = await outletModel.findById(id);
+    const result = orders.map(async (q) => {
+      return {
+        ...q._doc,
+        items: q.items.map(async (p) => {
+          console.log(p);
+          const value = await itemModel.findById(p);
+          console.log("value", value);
+          return value;
+        }),
+      };
+    });
 
-//     const final = [];
-
-//     for await (let productId of products.products) {
-//       const product = await productModel.findById(productId);
-//       final.push(product);
-//     }
-
-//     res.status(200).send(final);
-//   } catch (error) {
-//     console.log(error);
-//     res.status(500).send(`Something wrong happened: ${error}`);
-//   }
-// });
+    const data = await Promise.all(result);
+    console.log(data);
+    res.send(data);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(`Algo errado aconteceu: ${error}`);
+  }
+});
 
 router.put(
   "/outlets",
@@ -48,26 +43,26 @@ router.put(
       .trim()
       .isLength({ min: 1 })
       .notEmpty()
-      .withMessage("Provide a id"),
+      .withMessage("Introduza um id"),
   ],
   validateRequest,
   currentUser,
   requiredAuth,
   async (req, res) => {
     try {
-      nst { name, obs, date, items ,id} = req.body;
-
-      const user = await userModel.findById(req.currentUser.id);
+      const { name, obs, date, items, id } = req.body;
+      const { currentUser } = req;
+      const user = await userModel.findById(currentUser.id);
       if (!user) {
-        return res.status(400).send("User not found");
+        return res.status(400).send("Utilizador não encontrado");
       }
-      if (user.permission === "view") {
-        return res.status(400).send("You are not authorized to do this");
+      if (user.permission !== "admin") {
+        return res.status(400).send("Não tem permissão para fazer isto");
       }
 
       const order = await orderModel.findById(id);
       if (!order) {
-        return res.status(400).send("Order not found");
+        return res.status(400).send("Encomenda não encontrada");
       }
 
       order.set({
@@ -82,7 +77,7 @@ router.put(
       res.status(200).send(order);
     } catch (error) {
       console.log(error);
-      res.status(500).send(`Something wrong happened: ${error}`);
+      res.status(500).send(`Algo errado aconteceu: ${error}`);
     }
   }
 );
@@ -95,11 +90,7 @@ router.post(
       .isLength({ min: 1 })
       .notEmpty()
       .withMessage("Provide a name"),
-    body("obs")
-      .trim()
-      .isLength({ min: 1 })
-      .notEmpty()
-      .withMessage("Provide a size"),
+
     body("date")
       .trim()
       .isLength({ min: 1 })
@@ -115,16 +106,17 @@ router.post(
 
       const user = await userModel.findById(req.currentUser.id);
       if (!user) {
-        return res.status(400).send("User not found");
+        return res.status(400).send("Utilizador não encontrado");
       }
-      if (user.permission === "view") {
-        return res.status(400).send("You are not authorized to do this");
+      if (user.permission !== "admin") {
+        return res.status(400).send("Você não tem permissão para fazer isto");
       }
+      console.log(new Date(date).toDateString());
 
       const order = new orderModel({
         name: name,
         obs: obs,
-        date: date,
+        date: Date.parse(date),
         items: items,
         created_at: Date.now(),
       });
@@ -133,7 +125,7 @@ router.post(
       res.status(200).send(order);
     } catch (error) {
       console.log(error);
-      res.status(500).send(`Something wrong happened: ${error}`);
+      res.status(500).send(`Algo errado aconteceu: ${error}`);
     }
   }
 );
