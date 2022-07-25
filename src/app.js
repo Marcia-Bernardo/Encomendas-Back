@@ -1,6 +1,5 @@
 import { userRouter } from "./routes/users.js";
 import { orderRouter } from "./routes/orders.js";
-import { orderLineRouter } from "./routes/orderLines.js";
 import { itemRouter } from "./routes/items.js";
 import cookieSession from "cookie-session";
 import bodyParser from "body-parser";
@@ -22,7 +21,7 @@ app.use(
 
 router.use(userRouter);
 router.use(orderRouter);
-router.use(orderLineRouter);
+
 router.use(itemRouter);
 
 app.use("/api/", router);
@@ -32,4 +31,3 @@ app.all("*", async (req, res) => {
 });
 
 export { app };
-

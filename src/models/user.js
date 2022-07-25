@@ -15,8 +15,6 @@ const userSchema = new Schema(
       required: true,
     },
     permission: { type: String, default: "view", required: true },
-    created_at: { type: Date, default: Date.now() },
-    updated_at: { type: Date, default: Date.now() },
   },
   {
     toJSON: {
@@ -41,4 +39,3 @@ userSchema.statics.build = (attrs) => new userModel(attrs);
 const userModel = mongoose.model("User", userSchema);
 
 export default userModel;
-

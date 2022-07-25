@@ -8,15 +8,15 @@ const orderSchema = new Schema(
     _id: { type: String, default: v1 },
     items: [
       {
-        type: String,
-        ref: "Item",
+        item: { type: String },
+        qtd: { type: String },
+        isPreparing: { type: Boolean, default: false },
       },
     ],
     obs: { type: String, required: true },
     name: { type: String, required: true },
     date: { type: Date, required: true },
-    created_at: { type: Date, default: Date.now() },
-    updated_at: { type: Date, default: Date.now() },
+    status: { type: Number, default: 0 },
   },
   {
     toJSON: {

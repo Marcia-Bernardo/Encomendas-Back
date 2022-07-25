@@ -10,8 +10,6 @@ const itemSchema = new Schema(
       type: Number,
       required: true,
     },
-    created_at: { type: Date, default: Date.now() },
-    updated_at: { type: Date, default: Date.now() },
   },
   {
     toJSON: {
