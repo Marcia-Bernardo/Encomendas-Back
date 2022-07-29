@@ -15,7 +15,7 @@ router.post(
       .trim()
       .isLength({ min: 4, max: 20 })
       .notEmpty()
-      .withMessage("Introduza um username"),
+      .withMessage("Utilizador precisa ter mais de 4 letra"),
     body("password")
       .trim()
       .isLength({ min: 4, max: 20 })
@@ -53,7 +53,7 @@ router.put(
       .trim()
       .isLength({ min: 4, max: 20 })
       .notEmpty()
-      .withMessage("Introduza um username"),
+      .withMessage("Utilizador precisa ter mais de 4 letra"),
     body("password")
       .trim()
       .isLength({ min: 4, max: 20 })
@@ -108,28 +108,30 @@ router.post(
     body("username")
       .trim()
       .isLength({ min: 4, max: 20 })
-      .notEmpty()
-      .withMessage("Introduza um username"),
+      .withMessage("Utilizador precisa ter mais de 4 letras"),
     body("password")
       .trim()
       .isLength({ min: 4, max: 20 })
-      .notEmpty()
-      .withMessage("Introfuza uma password"),
+      .withMessage("Introduza uma password"),
   ],
   validateRequest,
   async (req, res) => {
     try {
       const { username, password } = req.body;
+      console.log(req.body);
       const existingUser = await userModel.findOne({ username });
+
       if (!existingUser) {
-        return res.status(401).send("Utilizador não encontrado");
+        return res
+          .status(401)
+          .send({ error: [{ msg: "Utilizador não encontrado" }] });
       }
       const passwordsMatch = await Password.compare(
         existingUser.password,
         password
       );
       if (!passwordsMatch) {
-        return res.status(401).send("Password errada");
+        return res.status(401).send({ error: [{ msg: "Password errada" }] });
       }
 
       const userJwt = jwt.sign(
@@ -141,10 +143,10 @@ router.post(
       );
 
       req.session = { jwt: userJwt };
-      res.status(200).send(existingUser);
-    } catch (error) {
-      console.log(error);
-      res.status(500).send(`Algo errado aconteceu: ${error}`);
+      res.status(200).send({ jwt: userJwt });
+    } catch (e) {
+      console.log(e);
+      res.status(500).send({ error: [{ msg: `Algo errado aconteceu: ${e}` }] });
     }
   }
 );
@@ -180,4 +182,3 @@ router.get(
 );
 
 export { router as userRouter };
-

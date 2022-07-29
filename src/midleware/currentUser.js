@@ -14,4 +14,3 @@ const currentUser = (req, res, next) => {
 };
 
 export default currentUser;
-

@@ -5,17 +5,29 @@ import currentUser from "../midleware/currentUser.js";
 import requiredAuth from "../midleware/requiredAuth.js";
 import validateRequest from "../midleware/validateRequest.js";
 import { body } from "express-validator";
-
+// import endOfDay from "date-fns/endOfDay";
+// import startOfDay from "date-fns/startOfDay";
 const router = express.Router();
 
 router.get("/all", async (req, res) => {
   try {
     const orders = await orderModel.find();
 
-    res.send(orders);
+    return res.send(orders);
   } catch (error) {
     console.log(error);
-    res.status(500).send(`Algo errado aconteceu: ${error}`);
+    return res.status(500).send(`Algo errado aconteceu: ${error}`);
+  }
+});
+
+router.get("/order/:id", async (req, res) => {
+  try {
+    const orders = await orderModel.findById(req.params.id);
+
+    return res.send(orders);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send(`Algo errado aconteceu: ${error}`);
   }
 });
 
@@ -61,10 +73,10 @@ router.put(
       });
       await order.save();
 
-      res.status(200).send(order);
+      return res.status(200).send(order);
     } catch (error) {
       console.log(error);
-      res.status(500).send(`Algo errado aconteceu: ${error}`);
+      return res.status(500).send(`Algo errado aconteceu: ${error}`);
     }
   }
 );
@@ -78,19 +90,20 @@ router.post(
       .trim()
       .isLength({ min: 1 })
       .withMessage("Introduza a data do pedido e hora de entrega"),
-
     body("items")
       .isArray()
       .notEmpty()
-      .withMessage("Introduza pelo menos um item"),
+      .withMessage("Introduza pelo menos um artigo"),
   ],
   validateRequest,
 
   async (req, res) => {
     try {
-      console.log(req.body);
       const { name, obs, date, items } = req.body;
-
+      console.log(items.length);
+      if (items.length == 0) {
+        return res.status(400).send({ error: [{ msg: "sem itens" }] });
+      }
       // const user = await userModel.findById(req.currentUser.id);
       // if (!user) {
       //   return res.status(400).send("Utilizador não encontrado");
@@ -108,10 +121,10 @@ router.post(
       });
       await order.save();
 
-      res.status(200).send(order);
+      return res.status(200).send(order);
     } catch (error) {
       console.log(error);
-      res.status(500).send(`Algo errado aconteceu: ${error}`);
+      return res.status(500).send(`Algo errado aconteceu: ${error}`);
     }
   }
 );
@@ -136,14 +149,14 @@ router.delete(
 
       const order = await orderModel.findById(id);
       if (!order) {
-        return res.status(400).send("Outlet not found");
+        return res.status(400).send("Order not found");
       }
       await order.delete();
 
-      res.status(200).send(order);
+      return res.status(200).send(order);
     } catch (error) {
       console.log(error);
-      res.status(500).send(`Something wrong happened: ${error}`);
+      return res.status(500).send(`Something wrong happened: ${error}`);
     }
   }
 );

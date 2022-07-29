@@ -13,7 +13,7 @@ const orderSchema = new Schema(
         isPreparing: { type: Boolean, default: false },
       },
     ],
-    obs: { type: String, required: true },
+    obs: { type: String },
     name: { type: String, required: true },
     date: { type: Date, required: true },
     status: { type: Number, default: 0 },
