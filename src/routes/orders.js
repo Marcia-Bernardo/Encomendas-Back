@@ -7,11 +7,12 @@ import validateRequest from "../midleware/validateRequest.js";
 import { body } from "express-validator";
 // import endOfDay from "date-fns/endOfDay";
 // import startOfDay from "date-fns/startOfDay";
+
 const router = express.Router();
 
 router.get("/all", async (req, res) => {
   try {
-    const orders = await orderModel.find();
+    const orders = await orderModel.find({ status: { $ne: 2 } });
 
     return res.send(orders);
   } catch (error) {
