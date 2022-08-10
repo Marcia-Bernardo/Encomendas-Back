@@ -10,7 +10,7 @@ const orderSchema = new Schema(
       {
         item: { type: String },
         qtd: { type: String },
-        isPreparing: { type: Boolean, default: false },
+        status: { type: Number, default: 0 },
       },
     ],
     obs: { type: String },

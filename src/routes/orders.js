@@ -33,6 +33,67 @@ router.get("/order/:id", async (req, res) => {
 });
 
 router.put(
+  "/orderUpdate",
+  // [
+  //   body("id")
+  //     .trim()
+  //     .isLength({ min: 1 })
+  //     .notEmpty()
+  //     .withMessage("Introduza um id"),
+  // ],
+  // validateRequest,
+  // currentUser,
+  // requiredAuth,
+  async (req, res) => {
+    try {
+      const { id, obs, items, name, date } = req.body;
+      // const { currentUser } = req;
+      // const user = await userModel.findById(currentUser.id);
+      // if (!user) {
+      //   return res.status(400).send("Utilizador não encontrado");
+      // }
+      // if (user.permission !== "admin") {
+      //   return res.status(400).send("Não tem permissão para fazer isto");
+      // }
+
+      const order = await orderModel.findById(id);
+      if (!order) {
+        return res.status(400).send("Encomenda não encontrada");
+      }
+
+      const itemsUpdated = [];
+      items.forEach((item) => {
+        let count = 0;
+
+        order.items.forEach((newItem) => {
+          if (newItem.item == item.item) {
+            item.qtd = newItem.qtd;
+            itemsUpdated.push(item);
+            count++;
+          }
+        });
+        console.log(count);
+        if (count == 0) {
+          itemsUpdated.push({ ...item, status: 0 });
+        }
+        count = 0;
+      });
+      console.log(itemsUpdated);
+      order.set({
+        items: itemsUpdated,
+      });
+      console.log(order);
+      await order.save();
+
+      return res.status(200).send(order);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send(`Algo errado aconteceu: ${error}`);
+    }
+  }
+);
+
+router.put(
   "/order",
   // [
   //   body("id")
@@ -60,17 +121,64 @@ router.put(
       if (!order) {
         return res.status(400).send("Encomenda não encontrada");
       }
+
       const itemsUpdated = [];
       order.items.forEach((item) => {
         if (item.item == itemName) {
-          item.isPreparing = !item.isPreparing;
+          if (item.status == 2) {
+            item.status = 0;
+          } else {
+            item.status = item.status + 1;
+          }
         }
-
         itemsUpdated.push(item);
       });
 
       order.set({
         items: itemsUpdated,
+      });
+      console.log(order);
+      await order.save();
+
+      return res.status(200).send(order);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send(`Algo errado aconteceu: ${error}`);
+    }
+  }
+);
+
+router.put(
+  "/orderStatus",
+  // [
+  //   body("id")
+  //     .trim()
+  //     .isLength({ min: 1 })
+  //     .notEmpty()
+  //     .withMessage("Introduza um id"),
+  // ],
+  // validateRequest,
+  // currentUser,
+  // requiredAuth,
+  async (req, res) => {
+    try {
+      const { id, status } = req.body;
+      // const { currentUser } = req;
+      // const user = await userModel.findById(currentUser.id);
+      // if (!user) {
+      //   return res.status(400).send("Utilizador não encontrado");
+      // }
+      // if (user.permission !== "admin") {
+      //   return res.status(400).send("Não tem permissão para fazer isto");
+      // }
+
+      const order = await orderModel.findById(id);
+      if (!order) {
+        return res.status(400).send("Encomenda não encontrada");
+      }
+
+      order.set({
+        status: status,
       });
       await order.save();
 
