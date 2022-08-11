@@ -13,19 +13,6 @@ import userModel from "../models/user.js";
 
 const router = express.Router();
 
-router.get("/all", async (req, res) => {
-  try {
-    const orders = await orderModel.find({
-      status: { $ne: 2 },
-    });
-
-    return res.send(orders);
-  } catch (error) {
-    console.log(error);
-    return res.status(500).send(`Algo errado aconteceu: ${error}`);
-  }
-});
-
 router.get("/status/:status", async (req, res) => {
   try {
     const { status } = req.params;
@@ -41,12 +28,13 @@ router.get("/status/:status", async (req, res) => {
   }
 });
 
-router.get("/date", async (req, res) => {
+router.get("/date/:date", async (req, res) => {
   try {
+    const { date } = req.params;
     const orders = await orderModel.find({
       date: {
-        $gte: startOfDay(new Date("2022-08-10T19:15:00.000Z")),
-        $lte: endOfDay(new Date("2022-08-12T19:15:00.000Z")),
+        $gte: startOfDay(new Date(date)),
+        $lte: endOfDay(new Date(date)),
       },
     });
 
@@ -59,7 +47,8 @@ router.get("/date", async (req, res) => {
 
 router.get("/order/:id", async (req, res) => {
   try {
-    const orders = await orderModel.findById(req.params.id);
+    const { id } = req.params;
+    const orders = await orderModel.findById(id);
 
     return res.send(orders);
   } catch (error) {
