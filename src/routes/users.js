@@ -1,11 +1,14 @@
 import express from "express";
+
 import jwt from "jsonwebtoken";
+
 import { body } from "express-validator";
-import userModel from "../models/user.js";
+
 import { Password } from "../lib/password.js";
-import validateRequest from "../midleware/validateRequest.js";
 import currentUser from "../midleware/currentUser.js";
 import requiredAuth from "../midleware/requiredAuth.js";
+import validateRequest from "../midleware/validateRequest.js";
+import userModel from "../models/user.js";
 const router = express.Router();
 
 router.post(

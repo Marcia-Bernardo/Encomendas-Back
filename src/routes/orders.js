@@ -1,18 +1,54 @@
 import express from "express";
-import orderModel from "../models/order.js";
-import userModel from "../models/user.js";
+
+import endOfDay from "date-fns/endOfDay/index.js";
+import startOfDay from "date-fns/startOfDay/index.js";
+
+import { body } from "express-validator";
+
 import currentUser from "../midleware/currentUser.js";
 import requiredAuth from "../midleware/requiredAuth.js";
 import validateRequest from "../midleware/validateRequest.js";
-import { body } from "express-validator";
-// import endOfDay from "date-fns/endOfDay";
-// import startOfDay from "date-fns/startOfDay";
+import orderModel from "../models/order.js";
+import userModel from "../models/user.js";
 
 const router = express.Router();
 
 router.get("/all", async (req, res) => {
   try {
-    const orders = await orderModel.find({ status: { $ne: 2 } });
+    const orders = await orderModel.find({
+      status: { $ne: 2 },
+    });
+
+    return res.send(orders);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send(`Algo errado aconteceu: ${error}`);
+  }
+});
+
+router.get("/status/:status", async (req, res) => {
+  try {
+    const { status } = req.params;
+    const orders = await orderModel.find({
+      status: { $gte: 0, $lt: status },
+      date: { $gte: startOfDay(new Date()), $lte: endOfDay(new Date()) },
+    });
+
+    return res.send(orders);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send(`Algo errado aconteceu: ${error}`);
+  }
+});
+
+router.get("/date", async (req, res) => {
+  try {
+    const orders = await orderModel.find({
+      date: {
+        $gte: startOfDay(new Date("2022-08-10T19:15:00.000Z")),
+        $lte: endOfDay(new Date("2022-08-12T19:15:00.000Z")),
+      },
+    });
 
     return res.send(orders);
   } catch (error) {
