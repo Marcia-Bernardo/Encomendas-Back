@@ -16,10 +16,12 @@ const router = express.Router();
 router.get("/status/:status", async (req, res) => {
   try {
     const { status } = req.params;
-    const orders = await orderModel.find({
-      status: { $gte: 0, $lt: status },
-      date: { $gte: startOfDay(new Date()), $lte: endOfDay(new Date()) },
-    });
+    const orders = await orderModel
+      .find({
+        status: { $gte: 0, $lt: status },
+        date: { $gte: startOfDay(new Date()), $lte: endOfDay(new Date()) },
+      })
+      .sort("date");
 
     return res.send(orders);
   } catch (error) {
@@ -31,12 +33,14 @@ router.get("/status/:status", async (req, res) => {
 router.get("/date/:date", async (req, res) => {
   try {
     const { date } = req.params;
-    const orders = await orderModel.find({
-      date: {
-        $gte: startOfDay(new Date(date)),
-        $lte: endOfDay(new Date(date)),
-      },
-    });
+    const orders = await orderModel
+      .find({
+        date: {
+          $gte: startOfDay(new Date(date)),
+          $lte: endOfDay(new Date(date)),
+        },
+      })
+      .sort("date");
 
     return res.send(orders);
   } catch (error) {
