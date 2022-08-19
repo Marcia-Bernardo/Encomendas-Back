@@ -37,7 +37,10 @@ router.get("/status/:status", async (req, res) => {
 router.get("/date/:date", async (req, res) => {
   try {
     const { date } = req.params;
-    // console.log(startOfDay(new Date()), endOfDay(new Date()));
+    console.log(
+      utcToZonedTime(startOfDay(new Date(date)), "Europe/Madrid"),
+      utcToZonedTime(endOfDay(new Date(date)), "Europe/Madrid")
+    );
     const orders = await orderModel
       .find({
         date: {
