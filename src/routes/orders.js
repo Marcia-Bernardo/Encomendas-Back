@@ -1,7 +1,7 @@
 import express from "express";
 
-import endOfDay from "date-fns/endOfDay/index.js";
-import startOfDay from "date-fns/startOfDay/index.js";
+import { endOfDay } from "date-fns";
+import { startOfDay } from "date-fns";
 
 import { body } from "express-validator";
 
@@ -10,16 +10,20 @@ import requiredAuth from "../midleware/requiredAuth.js";
 import validateRequest from "../midleware/validateRequest.js";
 import orderModel from "../models/order.js";
 import userModel from "../models/user.js";
-
+import { utcToZonedTime } from "date-fns-tz/esm";
 const router = express.Router();
 
 router.get("/status/:status", async (req, res) => {
   try {
     const { status } = req.params;
+
     const orders = await orderModel
       .find({
         status: { $gte: 0, $lt: status },
-        date: { $gte: startOfDay(new Date()), $lte: endOfDay(new Date()) },
+        date: {
+          $gte: utcToZonedTime(startOfDay(new Date()), "Europe/Madrid"),
+          $lte: utcToZonedTime(endOfDay(new Date()), "Europe/Madrid"),
+        },
       })
       .sort("date");
 
@@ -33,11 +37,12 @@ router.get("/status/:status", async (req, res) => {
 router.get("/date/:date", async (req, res) => {
   try {
     const { date } = req.params;
+    // console.log(startOfDay(new Date()), endOfDay(new Date()));
     const orders = await orderModel
       .find({
         date: {
-          $gte: startOfDay(new Date(date)),
-          $lte: endOfDay(new Date(date)),
+          $gte: utcToZonedTime(startOfDay(new Date(date)), "Europe/Madrid"),
+          $lte: utcToZonedTime(endOfDay(new Date(date)), "Europe/Madrid"),
         },
       })
       .sort("date");
@@ -87,29 +92,16 @@ router.put(
 
       const order = await orderModel.findById(id);
       if (!order) {
-        return res.status(400).send("Encomenda não encontrada");
+        return res
+          .status(400)
+          .send({ error: [{ msg: "Encomenda não encontrada" }] });
       }
 
-      const itemsUpdated = [];
-      items.forEach((item) => {
-        let count = 0;
-
-        order.items.forEach((newItem) => {
-          if (newItem.item == item.item) {
-            item.qtd = newItem.qtd;
-            itemsUpdated.push(item);
-            count++;
-          }
-        });
-        console.log(count);
-        if (count == 0) {
-          itemsUpdated.push({ ...item, status: 0 });
-        }
-        count = 0;
-      });
-      console.log(itemsUpdated);
       order.set({
-        items: itemsUpdated,
+        obs,
+        items,
+        name,
+        date,
       });
       console.log(order);
       await order.save();
@@ -148,7 +140,9 @@ router.put(
 
       const order = await orderModel.findById(id);
       if (!order) {
-        return res.status(400).send("Encomenda não encontrada");
+        return res
+          .status(400)
+          .send({ error: [{ msg: "Encomenda não encontrada" }] });
       }
 
       const itemsUpdated = [];
@@ -203,7 +197,9 @@ router.put(
 
       const order = await orderModel.findById(id);
       if (!order) {
-        return res.status(400).send("Encomenda não encontrada");
+        return res
+          .status(400)
+          .send({ error: [{ msg: "Encomenda não encontrada" }] });
       }
 
       order.set({
@@ -214,7 +210,9 @@ router.put(
       return res.status(200).send(order);
     } catch (error) {
       console.log(error);
-      return res.status(500).send(`Algo errado aconteceu: ${error}`);
+      return res
+        .status(500)
+        .send({ error: [{ msg: `Algo errado aconteceu: ${error}` }] });
     }
   }
 );
@@ -262,7 +260,9 @@ router.post(
       return res.status(200).send(order);
     } catch (error) {
       console.log(error);
-      return res.status(500).send(`Algo errado aconteceu: ${error}`);
+      return res
+        .status(500)
+        .send({ error: [{ msg: `Algo errado aconteceu: ${error}` }] });
     }
   }
 );
