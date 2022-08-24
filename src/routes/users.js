@@ -32,7 +32,9 @@ router.post(
       const existUser = await userModel.findOne({ username });
 
       if (existUser) {
-        return res.status(400).send("Utilizador já existe");
+        return res
+          .status(400)
+          .send({ error: [{ msg: "Utilizador já existe" }] });
       }
       const newUser = new userModel({
         username,
@@ -41,10 +43,14 @@ router.post(
       });
       await newUser.save();
 
-      res.status(200).send("Utilizador criado com sucesso");
+      res
+        .status(200)
+        .send({ error: [{ msg: "Utilizador criado com sucesso" }] });
     } catch (error) {
       console.log(error);
-      res.status(500).send(`Algo de errado aconteceu: ${error}`);
+      res
+        .status(500)
+        .send({ error: [{ msg: `Algo errado aconteceu: ${error}` }] });
     }
   }
 );
@@ -70,10 +76,14 @@ router.put(
       const user = await userModel.findOne({ username });
 
       if (!user) {
-        return res.status(400).send("Utilizador não encontrado");
+        return res
+          .status(400)
+          .send({ error: [{ msg: "Utilizador não encontrado" }] });
       }
       if (user.permission !== "admin") {
-        return res.status(400).send("Não tem permissão para fazer isto");
+        return res
+          .status(400)
+          .send({ error: [{ msg: "Não tem permissão para fazer isto" }] });
       }
       user.set({ permission, updated_at: Date.now() });
       await user.save();
@@ -81,7 +91,9 @@ router.put(
       res.status(200).send(user);
     } catch (error) {
       console.log(error);
-      res.status(500).send(`Algo errado aconteceu: ${error}`);
+      res
+        .status(500)
+        .send({ error: [{ msg: `Algo errado aconteceu: ${error}` }] });
     }
   }
 );
@@ -92,16 +104,22 @@ router.delete("/user", async (req, res) => {
     const user = await userModel.findOne({ username });
 
     if (!user) {
-      return res.status(400).send("Utiliazdor não encontrado");
+      return res
+        .status(400)
+        .send({ error: [{ msg: "Utiliazdor não encontrado" }] });
     }
     if (user.permission !== "admin") {
-      return res.status(400).send("Não tem permissão para fazer isto");
+      return res
+        .status(400)
+        .send({ error: [{ msg: "Não tem permissão para fazer isto" }] });
     }
     await user.delete();
     res.status(200).send(user);
   } catch (error) {
     console.log(error);
-    res.status(500).send(`Algo errado aconteceu: ${error}`);
+    res
+      .status(500)
+      .send({ error: [{ msg: `Algo errado aconteceu: ${error}` }] });
   }
 });
 
@@ -146,10 +164,12 @@ router.post(
       );
 
       req.session = { jwt: userJwt };
-      res.status(200).send({ jwt: userJwt });
+      res.status(200).send({ jwt: userJwt, user: existingUser });
     } catch (e) {
       console.log(e);
-      res.status(500).send({ error: [{ msg: `Algo errado aconteceu: ${e}` }] });
+      res
+        .status(500)
+        .send({ error: [{ msg: `Algo errado aconteceu: ${error}` }] });
     }
   }
 );
@@ -164,7 +184,9 @@ router.get(
       const { currentUser } = req;
       const existingUser = await userModel.findOne({ _id: currentUser.id });
       if (!existingUser) {
-        return res.status(401).send("Utiliador não encontrado");
+        return res
+          .status(401)
+          .send({ error: [{ msg: "Utilizador não encontrado" }] });
       }
 
       const userJwt = jwt.sign(
@@ -179,7 +201,9 @@ router.get(
       res.status(200).send(existingUser);
     } catch (error) {
       console.log(error);
-      res.status(500).send(`Algo errado aconteceu: ${error}`);
+      res
+        .status(500)
+        .send({ error: [{ msg: `Algo errado aconteceu: ${error}` }] });
     }
   }
 );

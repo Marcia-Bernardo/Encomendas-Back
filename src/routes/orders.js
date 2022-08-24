@@ -16,7 +16,6 @@ const router = express.Router();
 router.get("/status/:status", async (req, res) => {
   try {
     const { status } = req.params;
-
     const orders = await orderModel
       .find({
         status: { $gte: 0, $lt: status },
@@ -65,7 +64,9 @@ router.get("/order/:id", async (req, res) => {
     return res.send(orders);
   } catch (error) {
     console.log(error);
-    return res.status(500).send(`Algo errado aconteceu: ${error}`);
+    return res
+      .status(500)
+      .send({ error: [{ msg: `Algo errado aconteceu: ${error}` }] });
   }
 });
 
@@ -106,13 +107,14 @@ router.put(
         name,
         date,
       });
-      console.log(order);
       await order.save();
 
       return res.status(200).send(order);
-    } catch (error) {
-      console.log(error);
-      return res.status(500).send(`Algo errado aconteceu: ${error}`);
+    } catch (erro) {
+      console.log(erro);
+      return res
+        .status(500)
+        .send({ error: [{ msg: `Algo errado aconteceu: ${erro}` }] });
     }
   }
 );
@@ -169,7 +171,9 @@ router.put(
       return res.status(200).send(order);
     } catch (error) {
       console.log(error);
-      return res.status(500).send(`Algo errado aconteceu: ${error}`);
+      return res
+        .status(500)
+        .send({ error: [{ msg: `Algo errado aconteceu: ${error}` }] });
     }
   }
 );
@@ -290,14 +294,18 @@ router.delete(
 
       const order = await orderModel.findById(id);
       if (!order) {
-        return res.status(400).send("Order not found");
+        return res
+          .status(400)
+          .send({ error: [{ msg: "Encomenda não encontrada" }] });
       }
       await order.delete();
 
       return res.status(200).send(order);
     } catch (error) {
       console.log(error);
-      return res.status(500).send(`Something wrong happened: ${error}`);
+      return res
+        .status(500)
+        .send({ error: [{ msg: `Algo errado aconteceu: ${error}` }] });
     }
   }
 );

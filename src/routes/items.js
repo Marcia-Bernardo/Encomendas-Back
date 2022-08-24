@@ -14,7 +14,9 @@ router.get("/item", async (req, res) => {
     res.status(200).send(items);
   } catch (error) {
     console.log(error);
-    res.status(500).send(`Algo errado aconteceu: ${error}`);
+    res
+      .status(500)
+      .send({ error: [{ msg: `Algo errado aconteceu: ${error}` }] });
   }
 });
 
@@ -24,7 +26,9 @@ router.get("/item/:id", async (req, res) => {
     res.status(200).send(item);
   } catch (error) {
     console.log(error);
-    res.status(500).send(`Algo errado aconteceu: ${error}`);
+    res
+      .status(500)
+      .send({ error: [{ msg: `Algo errado aconteceu: ${error}` }] });
   }
 });
 
@@ -47,7 +51,9 @@ router.put(
       // }
       const item = await itemModel.findById(id);
       if (!item) {
-        return res.status(400).send("Tipo de produto não encontrado");
+        return res
+          .status(400)
+          .send({ error: [{ msg: "Tipo de produto não encontrado" }] });
       }
       item.set({
         name: name || item.name,
@@ -58,7 +64,9 @@ router.put(
       res.status(200).send(item);
     } catch (error) {
       console.log(error);
-      res.status(500).send(`Algo de errado aconteceu: ${error}`);
+      res
+        .status(500)
+        .send({ error: [{ msg: `Algo errado aconteceu: ${error}` }] });
     }
   }
 );
@@ -97,7 +105,9 @@ router.post(
       res.status(200).json("Adicionado com sucesso");
     } catch (error) {
       console.log(error);
-      res.status(500).send(`Algo errado aconteceu: ${error}`);
+      res
+        .status(500)
+        .send({ error: [{ msg: `Algo errado aconteceu: ${error}` }] });
     }
   }
 );
@@ -121,14 +131,18 @@ router.delete(
       const item = await itemModel.findById(id);
       console.log(item);
       if (!item) {
-        return res.status(400).send("Product not found");
+        return res
+          .status(400)
+          .send({ error: [{ msg: "Tipo de produto não encontrado" }] });
       }
 
       await item.remove();
       res.status(200).send(item);
     } catch (error) {
       console.log(error);
-      res.status(500).send(`Something wrong happened: ${error}`);
+      res
+        .status(500)
+        .send({ error: [{ msg: `Algo errado aconteceu: ${error}` }] });
     }
   }
 );
