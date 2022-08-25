@@ -4,6 +4,7 @@ const Schema = mongoose.Schema;
 
 const itemSchema = new Schema(
   {
+    orderNumber: { type: Number, required: true },
     _id: { type: String, default: v1 },
     name: { type: String, required: true },
     confetionTime: {
