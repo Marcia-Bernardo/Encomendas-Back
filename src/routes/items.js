@@ -36,24 +36,28 @@ router.put(
   "/item",
   [body("id").trim().isLength({ min: 1 }).withMessage("Introduza um id")],
   validateRequest,
-  // currentUser,
-  // requiredAuth,
+  currentUser,
+  requiredAuth,
   async (req, res) => {
     try {
       const { name, id, confetionTime } = req.body;
-      // const { currentUser } = req;
-      // const user = await userModel.findById(currentUser.id);
-      // if (!user) {
-      //   return res.status(400).send("Utilizador não encontrado");
-      // }
-      // if (user.permission !== "admin") {
-      //   return res.status(400).send("Não tem permissão para fazer isto");
-      // }
+      const { currentUser } = req;
+      const user = await userModel.findById(currentUser.id);
+      if (!user) {
+        return res
+          .status(400)
+          .send({ error: [{ msg: "Utilizador não encontrado" }] });
+      }
+      if (user.permission !== "admin") {
+        return res
+          .status(400)
+          .send({ error: [{ msg: "Não tem permissão para fazer isto" }] });
+      }
       const item = await itemModel.findById(id);
       if (!item) {
         return res
           .status(400)
-          .send({ error: [{ msg: "Tipo de produto não encontrado" }] });
+          .send({ error: [{ msg: "Item não encontrado" }] });
       }
       item.set({
         name: name || item.name,
@@ -73,22 +77,32 @@ router.put(
 
 router.put(
   "/item/changeOrder",
-  // [body("id").trim().isLength({ min: 1 }).withMessage("Introduza um id")],
-  // validateRequest,
-  // currentUser,
-  // requiredAuth,
+  [
+    body("number").not().isEmpty().withMessage("Introduza um número"),
+    body("direction")
+      .trim()
+      .isLength({ min: 1 })
+      .withMessage("Introduza uma direção"),
+  ],
+  validateRequest,
+  currentUser,
+  requiredAuth,
   async (req, res) => {
     try {
       const { number, direction } = req.body;
-      console.log(number, direction);
-      // const { currentUser } = req;
-      // const user = await userModel.findById(currentUser.id);
-      // if (!user) {
-      //   return res.status(400).send("Utilizador não encontrado");
-      // }
-      // if (user.permission !== "admin") {
-      //   return res.status(400).send("Não tem permissão para fazer isto");
-      // }
+      const { currentUser } = req;
+
+      const user = await userModel.findById(currentUser.id);
+      if (!user) {
+        return res
+          .status(400)
+          .send({ error: [{ msg: "Utilizador não encontrado" }] });
+      }
+      if (user.permission !== "admin") {
+        return res
+          .status(400)
+          .send({ error: [{ msg: "Não tem permissão para fazer isto" }] });
+      }
       if (number <= 0 && direction == "up") {
         return res
           .status(403)
@@ -106,12 +120,10 @@ router.put(
       const item2 = await itemModel.findOne({
         orderNumber: direction == "up" ? number - 1 : number + 1,
       });
-      console.log(item1);
-      console.log(item2);
       if (!item1 || !item2) {
         return res
           .status(400)
-          .send({ error: [{ msg: "Tipo de produto não encontrado" }] });
+          .send({ error: [{ msg: "Item não encontrado" }] });
       }
       const orderNumberItem1 = item1.orderNumber;
       item1.set({
@@ -136,30 +148,35 @@ router.post(
   [
     body("confetionTime")
       .trim()
-      .isLength({ min: 1 })
+      .not()
+      .isEmpty()
       .withMessage("Introduza um tempo de confecção"),
 
     body("name").trim().isLength({ min: 1 }).withMessage("Introduza um nome"),
   ],
   validateRequest,
-  // currentUser,
-  // requiredAuth,
+  currentUser,
+  requiredAuth,
   async (req, res) => {
     try {
       const { name, confetionTime } = req.body;
-      // const { currentUser } = req;
-      // const user = await userModel.findById(currentUser.id);
-      // if (!user) {
-      //   return res.status(400).send("Utilizador não encontrado");
-      // }
-      // if (user.permission !== "admin") {
-      //   return res.status(400).send("Não tem permissão para fazer isto");
-      // }
-      const allItens = await itemModel.count();
+      const { currentUser } = req;
+      const user = await userModel.findById(currentUser.id);
+      if (!user) {
+        return res
+          .status(400)
+          .send({ error: [{ msg: "Utilizador não encontrado" }] });
+      }
+      if (user.permission !== "admin") {
+        return res
+          .status(400)
+          .send({ error: [{ msg: "Não tem permissão para fazer isto" }] });
+      }
+      const totalItensNumber = await itemModel.countDocuments();
       const itemType = new itemModel({
         name: name,
         confetionTime: confetionTime,
-        orderNumber: allItens,
+        orderNumber: totalItensNumber,
       });
       await itemType.save();
 
@@ -175,30 +192,35 @@ router.post(
 
 router.delete(
   "/item",
-  [body("id").trim().isLength({ min: 1 }).withMessage("Provide a id")],
-  // validateRequest,
-  // requiredAuth,
+  [body("id").trim().isLength({ min: 1 }).withMessage("Introduza um id")],
+  validateRequest,
+  currentUser,
+  requiredAuth,
   async (req, res) => {
     try {
       const { id } = req.body;
+      const user = await userModel.findById(req.currentUser.id);
+      if (!user) {
+        return res
+          .status(400)
+          .send({ error: [{ msg: "Utilizador não encontrado" }] });
+      }
 
-      // const user = await userModel.findById(req.currentUser.id);
-      // if (!user) {
-      //   return res.status(400).send("User not found");
-      // }
-      // if (user.permission === "view") {
-      //   return res.status(400).send("You are not authorized to do this");
-      // }
+      if (user.permission === "view") {
+        return res
+          .status(400)
+          .send({ error: [{ msg: "Não tens autorização" }] });
+      }
       const item = await itemModel.findById(id);
-      console.log(item);
+
       if (!item) {
         return res
           .status(400)
-          .send({ error: [{ msg: "Tipo de produto não encontrado" }] });
+          .send({ error: [{ msg: "Item não encontrado" }] });
       }
 
       await item.remove();
-      res.status(200).send(item);
+      res.status(200).json("Item removido com sucesso!");
     } catch (error) {
       console.log(error);
       res

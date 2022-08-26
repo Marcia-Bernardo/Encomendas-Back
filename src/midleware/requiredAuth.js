@@ -1,9 +1,8 @@
 const requiredAuth = (req, res, next) => {
   if (!req.currentUser) {
-    res.status(401).send("Not authorized");
+    return res.status(401).send({ error: [{ msg: `Não tem login` }] });
   }
   next();
 };
 
 export default requiredAuth;
-

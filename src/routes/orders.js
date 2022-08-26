@@ -55,10 +55,7 @@ router.get("/uniqueStatus/:status", async (req, res) => {
 router.get("/date/:date", async (req, res) => {
   try {
     const { date } = req.params;
-    console.log(
-      utcToZonedTime(startOfDay(new Date(date)), "Europe/Madrid"),
-      utcToZonedTime(endOfDay(new Date(date)), "Europe/Madrid")
-    );
+
     const orders = await orderModel
       .find({
         date: {
@@ -91,27 +88,31 @@ router.get("/order/:id", async (req, res) => {
 
 router.put(
   "/orderUpdate",
-  // [
-  //   body("id")
-  //     .trim()
-  //     .isLength({ min: 1 })
-  //     .notEmpty()
-  //     .withMessage("Introduza um id"),
-  // ],
-  // validateRequest,
-  // currentUser,
-  // requiredAuth,
+  [
+    body("id")
+      .trim()
+      .isLength({ min: 1 })
+      .notEmpty()
+      .withMessage("Introduza um id"),
+  ],
+  validateRequest,
+  currentUser,
+  requiredAuth,
   async (req, res) => {
     try {
       const { id, obs, items, name, date } = req.body;
-      // const { currentUser } = req;
-      // const user = await userModel.findById(currentUser.id);
-      // if (!user) {
-      //   return res.status(400).send("Utilizador não encontrado");
-      // }
-      // if (user.permission !== "admin") {
-      //   return res.status(400).send("Não tem permissão para fazer isto");
-      // }
+      const { currentUser } = req;
+      const user = await userModel.findById(currentUser.id);
+      if (!user) {
+        return res
+          .status(400)
+          .send({ error: [{ msg: "Utilizador não encontrado" }] });
+      }
+      if (user.permission !== "admin") {
+        return res
+          .status(400)
+          .send({ error: [{ msg: "Não tem permissão para fazer isto" }] });
+      }
 
       const order = await orderModel.findById(id);
       if (!order) {
@@ -139,15 +140,19 @@ router.put(
 );
 
 router.put(
-  "/order",
-  // [
-  //   body("id")
-  //     .trim()
-  //     .isLength({ min: 1 })
-  //     .notEmpty()
-  //     .withMessage("Introduza um id"),
-  // ],
-  // validateRequest,
+  "/statusItemOrder",
+  [
+    body("id")
+      .trim()
+      .isLength({ min: 1 })
+      .notEmpty()
+      .withMessage("Introduza um id"),
+    body("itemName")
+      .trim()
+      .isLength({ min: 1 })
+      .withMessage("Introduza o nome do prato"),
+  ],
+  validateRequest,
   currentUser,
   requiredAuth,
   async (req, res) => {
@@ -156,10 +161,14 @@ router.put(
       const { currentUser } = req;
       const user = await userModel.findById(currentUser.id);
       if (!user) {
-        return res.status(400).send("Utilizador não encontrado");
+        return res
+          .status(400)
+          .send({ error: [{ msg: "Utilizador não encontrado" }] });
       }
       if (user.permission !== "admin") {
-        return res.status(400).send("Não tem permissão para fazer isto");
+        return res
+          .status(400)
+          .send({ error: [{ msg: "Não tem permissão para fazer isto" }] });
       }
 
       const order = await orderModel.findById(id);
@@ -199,27 +208,36 @@ router.put(
 
 router.put(
   "/orderStatus",
-  // [
-  //   body("id")
-  //     .trim()
-  //     .isLength({ min: 1 })
-  //     .notEmpty()
-  //     .withMessage("Introduza um id"),
-  // ],
-  // validateRequest,
-  // currentUser,
-  // requiredAuth,
+  [
+    body("id")
+      .trim()
+      .isLength({ min: 1 })
+      .notEmpty()
+      .withMessage("Introduza um id"),
+    body("status")
+      .trim()
+      .not()
+      .isEmpty()
+      .withMessage("Introduza um número entre 0 e 2 para o estado"),
+  ],
+  validateRequest,
+  currentUser,
+  requiredAuth,
   async (req, res) => {
     try {
       const { id, status } = req.body;
-      // const { currentUser } = req;
-      // const user = await userModel.findById(currentUser.id);
-      // if (!user) {
-      //   return res.status(400).send("Utilizador não encontrado");
-      // }
-      // if (user.permission !== "admin") {
-      //   return res.status(400).send("Não tem permissão para fazer isto");
-      // }
+      const { currentUser } = req;
+      const user = await userModel.findById(currentUser.id);
+      if (!user) {
+        return res
+          .status(400)
+          .send({ error: [{ msg: "Utilizador não encontrado" }] });
+      }
+      if (user.permission !== "admin") {
+        return res
+          .status(400)
+          .send({ error: [{ msg: "Não tem permissão para fazer isto" }] });
+      }
 
       const order = await orderModel.findById(id);
       if (!order) {
@@ -257,22 +275,31 @@ router.post(
       .notEmpty()
       .withMessage("Introduza pelo menos um artigo"),
   ],
+
   validateRequest,
+  currentUser,
+  requiredAuth,
 
   async (req, res) => {
     try {
       const { name, obs, date, items } = req.body;
-      console.log(items.length);
       if (items.length == 0) {
         return res.status(400).send({ error: [{ msg: "sem itens" }] });
       }
-      // const user = await userModel.findById(req.currentUser.id);
-      // if (!user) {
-      //   return res.status(400).send("Utilizador não encontrado");
-      // }
-      // if (user.permission !== "admin") {
-      //   return res.status(400).send("Você não tem permissão para fazer isto");
-      // }
+
+      const { currentUser } = req;
+      const user = await userModel.findById(currentUser.id);
+      if (!user) {
+        return res
+          .status(400)
+          .send({ error: [{ msg: "Utilizador não encontrado" }] });
+      }
+      if (user.permission !== "admin") {
+        return res
+          .status(400)
+          .send({ error: [{ msg: "Não tem permissão para fazer isto" }] });
+      }
+
       const newDate = new Date(date);
       newDate.setHours(newDate.getHours() + 1);
       const order = new orderModel({
@@ -297,19 +324,24 @@ router.delete(
   "/order",
   [body("id").trim().isLength({ min: 1 }).withMessage("Provide a id")],
   validateRequest,
-  // currentUser,
-  // requiredAuth,
+  currentUser,
+  requiredAuth,
   async (req, res) => {
     try {
       const { id } = req.body;
 
-      // const user = await userModel.findById(req.currentUser.id);
-      // if (!user) {
-      //   return res.status(400).send("User not found");
-      // }
-      // if (user.permission === "view") {
-      //   return res.status(400).send("You are not authorized to do this");
-      // }
+      const { currentUser } = req;
+      const user = await userModel.findById(currentUser.id);
+      if (!user) {
+        return res
+          .status(400)
+          .send({ error: [{ msg: "Utilizador não encontrado" }] });
+      }
+      if (user.permission !== "admin") {
+        return res
+          .status(400)
+          .send({ error: [{ msg: "Não tem permissão para fazer isto" }] });
+      }
 
       const order = await orderModel.findById(id);
       if (!order) {
@@ -319,7 +351,7 @@ router.delete(
       }
       await order.delete();
 
-      return res.status(200).send(order);
+      return res.status(200).json("Encomenda removida com sucesso!");
     } catch (error) {
       console.log(error);
       return res
