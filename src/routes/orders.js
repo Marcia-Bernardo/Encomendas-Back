@@ -5,12 +5,13 @@ import { startOfDay } from "date-fns";
 
 import { body } from "express-validator";
 
+import { utcToZonedTime } from "date-fns-tz/esm";
+
 import currentUser from "../midleware/currentUser.js";
 import requiredAuth from "../midleware/requiredAuth.js";
 import validateRequest from "../midleware/validateRequest.js";
 import orderModel from "../models/order.js";
 import userModel from "../models/user.js";
-import { utcToZonedTime } from "date-fns-tz/esm";
 const router = express.Router();
 
 router.get("/status/:status", async (req, res) => {
@@ -301,7 +302,7 @@ router.post(
       }
 
       const newDate = new Date(date);
-      newDate.setHours(newDate.getHours() + 1);
+      newDate.setHours(newDate.getHours());
       const order = new orderModel({
         name,
         obs,
@@ -362,3 +363,4 @@ router.delete(
 );
 
 export { router as orderRouter };
+
